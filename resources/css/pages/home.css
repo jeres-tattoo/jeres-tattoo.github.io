@@ -124,18 +124,20 @@
     .hero__hint { display: none; }
 }
 
-/* El nombre entra una sola vez, a la vez que los puntos se reúnen. */
-@media (prefers-reduced-motion: no-preference) {
-    .hero__name span,
-    .hero__lead,
-    .hero__where,
-    .hero__copy .button {
-        animation: rise 1.4s var(--ease-out) both;
-    }
-    .hero__name span + span { animation-delay: .12s; }
-    .hero__lead { animation-delay: .9s; }
-    .hero__where { animation-delay: 1s; }
-    .hero__copy .button { animation-delay: 1.1s; }
+/* El nombre entra una sola vez, a la vez que los puntos se reúnen (también con movimiento reducido,
+   como la reunión de puntos: es una entrada corta y única). */
+.hero__name span,
+.hero__lead,
+.hero__where,
+.hero__copy .button {
+    animation: rise 1.4s var(--ease-out) both;
+}
+.hero__name span + span { animation-delay: .12s; }
+.hero__lead { animation-delay: .9s; }
+.hero__where { animation-delay: 1s; }
+.hero__copy .button { animation-delay: 1.1s; }
+.js:not(.fonts) :is(.hero__name span, .hero__lead, .hero__where, .hero__copy .button) {
+    animation-play-state: paused;
 }
 @keyframes rise {
     from { opacity: 0; transform: translateY(.4em); filter: blur(6px); }

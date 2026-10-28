@@ -1,6 +1,11 @@
 // Redibuja una foto de tatuaje como un campo de puntos de luz: donde hay tinta, hay estrella.
 // Al cargar, los puntos llegan dispersos y se reúnen en la figura; el cursor (o el dedo en móvil)
-// los aparta como una pequeña gravedad. Con movimiento reducido se pinta la figura quieta.
+// los aparta como una pequeña gravedad.
+//
+// El reloj de la reunión solo avanza con fotogramas pintados y con el hero a la vista: en móvil,
+// con red lenta o el teléfono ocupado, Safari puede tardar en pintar o saltarse fotogramas, y con un
+// reloj de pared la animación terminaría sin que nadie la viera. Se reproduce también con "Reducir movimiento":
+// es una entrada única y corta, y es la identidad de la web.
 
 // Recorte de la foto donde está la figura (fracciones del ancho y alto de la imagen).
 const CROP = { x: 0.16, y: 0.17, w: 0.62, h: 0.72 };
@@ -11,7 +16,6 @@ const STARS = 240;
 export function initInkField(canvas) {
     if (!canvas) return;
 
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const ctx = canvas.getContext('2d');
     const ink = getComputedStyle(document.documentElement).getPropertyValue('--hueso').trim() || '#ece8df';
 
@@ -22,26 +26,26 @@ export function initInkField(canvas) {
     let stars = [];
     let pointer = { x: -1e4, y: -1e4 };
     let repel = 120;
-    let start = 0;
+    let elapsed = 0; // segundos de animación realmente pintados
+    let last = 0;
     let frame = 0;
     let running = false;
+    let ready = false;
+    let visible = false;
 
     const img = new Image();
     img.src = canvas.dataset.src;
-    img.decode().then(() => {
+    loaded(img).then(() => {
         samples = sample(img);
+        ready = true;
         resize();
-        if (reduce) {
-            draw(Infinity);
-            return;
-        }
-        start = performance.now();
         play();
     });
 
     function play() {
-        if (running) return;
+        if (running || !ready || !visible || document.hidden) return;
         running = true;
+        last = 0;
         frame = requestAnimationFrame(tick);
     }
 
@@ -52,7 +56,10 @@ export function initInkField(canvas) {
 
     function tick(now) {
         if (!running) return;
-        draw((now - start) / 1000);
+        // Como mucho 1/20 s por fotograma: si el navegador se para, la animación espera en vez de saltar.
+        if (last) elapsed += Math.min(now - last, 50) / 1000;
+        last = now;
+        draw(elapsed);
         frame = requestAnimationFrame(tick);
     }
 
@@ -88,10 +95,11 @@ export function initInkField(canvas) {
                 const dy = (y / sh - 0.5) * 2;
                 const edge = 1 - smooth(0.72, 1, Math.hypot(dx, dy));
                 const v = dark * edge;
-                if (Math.random() < v * 0.95) out.push({ x, y, v, sw, sh });
+                // Opacidad en 8 niveles: así se cambia globalAlpha 8 veces por frame y no miles.
+                if (Math.random() < v * 0.95) out.push({ x, y, v, sw, sh, a: Math.round((0.35 + v * 0.65) * 8) / 8 });
             }
         }
-        return out;
+        return out.sort((p, q) => p.a - q.a);
     }
 
     function resize() {
@@ -114,24 +122,24 @@ export function initInkField(canvas) {
         repel = Math.max(100, sw * scale * 0.21);
         const left = cx - (sw * scale) / 2;
         const top = cy - (sh * scale) / 2;
-        const fresh = dots.length === 0;
+        // Hasta que arranca la reunión, los puntos salen repartidos por todo el hero a su tamaño final.
+        const fresh = !elapsed;
 
         dots = samples.map((s, i) => {
             const prev = dots[i];
             return {
                 tx: left + (s.x + Math.random() - 0.5) * scale,
                 ty: top + (s.y + Math.random() - 0.5) * scale,
-                sx: fresh ? Math.random() * width : prev.sx,
-                sy: fresh ? Math.random() * height : prev.sy,
-                ox: prev?.ox ?? 0,
-                oy: prev?.oy ?? 0,
+                sx: fresh || !prev ? Math.random() * width : prev.sx,
+                sy: fresh || !prev ? Math.random() * height : prev.sy,
+                ox: prev ? prev.ox : 0,
+                oy: prev ? prev.oy : 0,
                 r: (0.6 + s.v * 0.9) * Math.max(scale / 2.6, 0.9),
-                // Opacidad en 8 niveles: así se cambia globalAlpha 8 veces por frame y no miles.
-                a: Math.round((0.35 + s.v * 0.65) * 8) / 8,
-                delay: fresh ? Math.random() * 0.9 : prev.delay,
+                a: s.a,
+                delay: fresh || !prev ? Math.random() * 0.9 : prev.delay,
                 phase: Math.random() * Math.PI * 2,
             };
-        }).sort((p, q) => p.a - q.a);
+        });
 
         stars = Array.from({ length: STARS }, () => ({
             x: Math.random() * width,
@@ -141,7 +149,7 @@ export function initInkField(canvas) {
             phase: Math.random() * Math.PI * 2,
         }));
 
-        if (reduce) draw(Infinity);
+        if (!running && elapsed) draw(Infinity);
     }
 
     function draw(t) {
@@ -186,9 +194,12 @@ export function initInkField(canvas) {
 
     new ResizeObserver(resize).observe(canvas);
 
-    if (reduce) return;
-
-    new IntersectionObserver(([entry]) => (entry.isIntersecting ? play() : pause())).observe(canvas);
+    new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible) play();
+        else pause();
+    }).observe(canvas);
+    document.addEventListener('visibilitychange', () => (document.hidden ? pause() : play()));
 
     const aim = (x, y) => {
         const rect = canvas.getBoundingClientRect();
@@ -206,6 +217,16 @@ export function initInkField(canvas) {
     addEventListener('touchmove', follow, { passive: true });
     addEventListener('touchend', away, { passive: true });
     addEventListener('touchcancel', away, { passive: true });
+}
+
+// decode() decodifica fuera del hilo principal; si el navegador la rechaza, basta con que cargue.
+function loaded(image) {
+    const onload = () => new Promise((resolve, reject) => {
+        if (image.complete && image.naturalWidth) return resolve();
+        image.addEventListener('load', resolve, { once: true });
+        image.addEventListener('error', reject, { once: true });
+    });
+    return image.decode ? image.decode().catch(onload) : onload();
 }
 
 function boxBlur(src, w, h, r) {
