@@ -1,0 +1,65 @@
+# Publica la web en GitHub Pages: compila los assets, exporta la portada a HTML estático y la sube.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      APP_ENV: production
+      APP_DEBUG: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+        id: pages
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+
+      - name: Exportar web estática
+        env:
+          APP_URL: ${{ steps.pages.outputs.base_url }}
+          ASSET_URL: ${{ steps.pages.outputs.base_url }}
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+          php artisan site:export
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment
