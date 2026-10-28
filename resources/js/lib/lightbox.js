@@ -22,6 +22,8 @@ export function initLightbox(dialog, works, triggers) {
         trigger.addEventListener('click', () => {
             show(Number(trigger.dataset.piece));
             dialog.showModal();
+            // El foco va al visor, no al primer enlace: sin anillo al abrir y las flechas siguen funcionando.
+            dialog.focus();
         });
     });
 

@@ -28,7 +28,10 @@
             <p class="hero__where">Madrid, en Holdfast. Por temporadas en Múnich, en Tattoo Noir.</p>
             <a class="button" href="#cita">Pedir cita</a>
         </div>
-        <p class="hero__hint" aria-hidden="true">Mueve el cursor por el arcángel</p>
+        <p class="hero__hint" aria-hidden="true">
+            <span class="hero__hint-mouse">Mueve el cursor por el arcángel</span>
+            <span class="hero__hint-touch">Pasa el dedo por el arcángel</span>
+        </p>
     </section>
 
     <section id="obra" class="obra" aria-labelledby="obra-title">
@@ -94,7 +97,7 @@
     <a href="https://www.instagram.com/{{ $jere['instagram'] }}/" rel="noopener">{{ '@'.$jere['instagram'] }}</a>
 </footer>
 
-<dialog class="lightbox" aria-labelledby="lightbox-title">
+<dialog class="lightbox" aria-labelledby="lightbox-title" tabindex="-1">
     <figure class="lightbox__figure">
         <img class="lightbox__img" src="" alt="">
         <figcaption>

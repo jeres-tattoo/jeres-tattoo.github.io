@@ -1,11 +1,10 @@
 // Redibuja una foto de tatuaje como un campo de puntos de luz: donde hay tinta, hay estrella.
-// Al cargar, los puntos llegan dispersos y se reúnen en la figura; el cursor los aparta como una
-// pequeña gravedad. Con movimiento reducido se pinta la figura quieta, sin llegada ni cursor.
+// Al cargar, los puntos llegan dispersos y se reúnen en la figura; el cursor (o el dedo en móvil)
+// los aparta como una pequeña gravedad. Con movimiento reducido se pinta la figura quieta.
 
 // Recorte de la foto donde está la figura (fracciones del ancho y alto de la imagen).
 const CROP = { x: 0.16, y: 0.17, w: 0.62, h: 0.72 };
 const SAMPLE_W = 240;
-const REPEL = 120;
 const GATHER = 2.2; // segundos que tarda cada punto en llegar
 const STARS = 240;
 
@@ -22,6 +21,7 @@ export function initInkField(canvas) {
     let dots = [];
     let stars = [];
     let pointer = { x: -1e4, y: -1e4 };
+    let repel = 120;
     let start = 0;
     let frame = 0;
     let running = false;
@@ -105,11 +105,13 @@ export function initInkField(canvas) {
 
         if (!samples.length) return;
         const { sw, sh } = samples[0];
+        // En pantallas estrechas la figura ocupa la parte de arriba, a plena luz, y el nombre va debajo.
         const narrow = width < 1024;
-        const figH = narrow ? height * 0.78 : height * 0.92;
-        const scale = Math.min(figH / sh, (narrow ? width * 1.05 : width * 0.55) / sw);
-        const cx = narrow ? width * 0.55 : width * 0.68;
-        const cy = narrow ? height * 0.36 : height * 0.52;
+        const figH = narrow ? height * 0.62 : height * 0.92;
+        const scale = Math.min(figH / sh, (narrow ? width * 0.98 : width * 0.55) / sw);
+        const cx = narrow ? width * 0.52 : width * 0.68;
+        const cy = narrow ? height * 0.37 : height * 0.52;
+        repel = Math.max(100, sw * scale * 0.21);
         const left = cx - (sw * scale) / 2;
         const top = cy - (sh * scale) / 2;
         const fresh = dots.length === 0;
@@ -124,11 +126,12 @@ export function initInkField(canvas) {
                 ox: prev?.ox ?? 0,
                 oy: prev?.oy ?? 0,
                 r: (0.6 + s.v * 0.9) * Math.max(scale / 2.6, 0.9),
-                a: (narrow ? 0.5 : 1) * (0.35 + s.v * 0.65),
+                // Opacidad en 8 niveles: así se cambia globalAlpha 8 veces por frame y no miles.
+                a: Math.round((0.35 + s.v * 0.65) * 8) / 8,
                 delay: fresh ? Math.random() * 0.9 : prev.delay,
                 phase: Math.random() * Math.PI * 2,
             };
-        });
+        }).sort((p, q) => p.a - q.a);
 
         stars = Array.from({ length: STARS }, () => ({
             x: Math.random() * width,
@@ -151,6 +154,7 @@ export function initInkField(canvas) {
             ctx.fillRect(s.x, s.y, s.r, s.r);
         }
 
+        let alpha = -1;
         for (const d of dots) {
             let x = d.tx;
             let y = d.ty;
@@ -163,8 +167,8 @@ export function initInkField(canvas) {
                 const dx = x + d.ox - pointer.x;
                 const dy = y + d.oy - pointer.y;
                 const dist = Math.hypot(dx, dy);
-                if (dist < REPEL && dist > 0.01) {
-                    const push = (1 - dist / REPEL) ** 2 * 6;
+                if (dist < repel && dist > 0.01) {
+                    const push = (1 - dist / repel) ** 2 * 6;
                     d.ox += (dx / dist) * push;
                     d.oy += (dy / dist) * push;
                 }
@@ -174,7 +178,7 @@ export function initInkField(canvas) {
                 y += d.oy;
             }
 
-            ctx.globalAlpha = d.a;
+            if (d.a !== alpha) ctx.globalAlpha = alpha = d.a;
             ctx.fillRect(x, y, d.r, d.r);
         }
         ctx.globalAlpha = 1;
@@ -186,11 +190,22 @@ export function initInkField(canvas) {
 
     new IntersectionObserver(([entry]) => (entry.isIntersecting ? play() : pause())).observe(canvas);
 
-    window.addEventListener('pointermove', (e) => {
+    const aim = (x, y) => {
         const rect = canvas.getBoundingClientRect();
-        pointer = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    }, { passive: true });
-    document.addEventListener('pointerleave', () => { pointer = { x: -1e4, y: -1e4 }; });
+        pointer = { x: x - rect.left, y: y - rect.top };
+    };
+    const away = () => { pointer = { x: -1e4, y: -1e4 }; };
+
+    // Ratón y lápiz. El dedo va por eventos táctiles: los pointer events se cancelan en cuanto el
+    // navegador empieza a hacer scroll, y los táctiles siguen llegando mientras el dedo se mueve.
+    addEventListener('pointermove', (e) => { if (e.pointerType !== 'touch') aim(e.clientX, e.clientY); }, { passive: true });
+    document.documentElement.addEventListener('mouseleave', away);
+
+    const follow = (e) => { if (e.touches.length) aim(e.touches[0].clientX, e.touches[0].clientY); };
+    addEventListener('touchstart', follow, { passive: true });
+    addEventListener('touchmove', follow, { passive: true });
+    addEventListener('touchend', away, { passive: true });
+    addEventListener('touchcancel', away, { passive: true });
 }
 
 function boxBlur(src, w, h, r) {

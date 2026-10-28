@@ -30,7 +30,11 @@ body {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
+    overflow-x: clip;
 }
+
+/* Safari iOS deja hacer scroll lateral aunque body lo recorte; html también. */
+html { overflow-x: hidden; overflow-x: clip; }
 
 /* Polvo de estrellas fijo detrás de todo, muy tenue. */
 body::before {
