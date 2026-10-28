@@ -79,6 +79,8 @@
     cursor: pointer;
 }
 .leaf.is-turned { transform: rotateY(-180deg); }
+/* Hojas tapadas por otras: no se pintan (lib/book.js). */
+.book .leaf.is-away { display: none; }
 
 .page {
     position: absolute;

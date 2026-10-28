@@ -28,16 +28,22 @@ export function initBook(book) {
     const turning = new Set();
     let current = 0; // hojas ya pasadas
     let lift = 0;
+    const shown = () => book.offsetParent !== null;
 
     // Las hojas quietas se apilan como en un libro de verdad; la que gira va en su copia, por encima.
+    // Solo se pintan las que pueden verse en el siguiente giro (la anterior a la izquierda, la abierta y la
+    // siguiente) y la primera, que hace de canto del montón izquierdo. Las demás quedan tapadas, y como
+    // cada hoja es una capa 3D, pintarlas todas agotaba la memoria del iPhone y Safari recargaba la página.
     function stack() {
         leaves.forEach((leaf, i) => {
             leaf.style.zIndex = i < current ? i + 1 : leaves.length - i;
+            leaf.classList.toggle('is-away', i > 0 && (i < current - 2 || i > current + 1));
         });
     }
 
-    // Solo se cargan los dibujos de las hojas cercanas a la que está abierta.
+    // Solo se cargan los dibujos de las hojas cercanas a la que está abierta, y del libro que se ve.
     function load() {
+        if (!shown()) return;
         leaves.slice(Math.max(0, current - 2), current + 3).forEach((leaf) => {
             leaf.querySelectorAll('img[data-src]:not([src])').forEach((img) => { img.src = img.dataset.src; });
         });
@@ -55,6 +61,7 @@ export function initBook(book) {
             back.inert = axis === 'x' || i !== current - 1;
         });
         end.inert = current !== leaves.length;
+        stack();
         load();
     }
 
@@ -168,8 +175,6 @@ export function initBook(book) {
         stack();
         render();
     }
-
-    const shown = () => book.offsetParent !== null;
 
     prev.addEventListener('click', () => go(-1));
     next.addEventListener('click', () => go(1));
