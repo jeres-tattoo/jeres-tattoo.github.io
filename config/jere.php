@@ -27,4 +27,29 @@ return [
         ['id' => 'corazon', 'title' => 'Beso en un corazón', 'place' => 'Antebrazo', 'date' => 'julio 2025', 'post' => 'DMc1IFqoHTt', 'depth' => 0.65],
     ],
 
+    // Sección de técnicas: cada una se dibuja en vivo a partir de una pieza de `works`
+    // con su propio efecto (resources/js/lib/techniques/{effect}.js).
+    'techniques' => [
+        [
+            'id' => 'realismo', 'name' => 'Realismo en negro y gris', 'effect' => 'relight', 'work' => 'laureada',
+            'text' => 'Volumen sin color. Solo grises, del negro más hondo al tono de la piel, hasta que una cara parece de piedra.',
+            'mouse' => 'Mueve el cursor: es la luz', 'touch' => 'Pasa el dedo: es la luz',
+        ],
+        [
+            'id' => 'punteado', 'name' => 'Punteado', 'effect' => 'stipple', 'work' => 'gorrion',
+            'text' => 'Sombras hechas solo con puntos, uno junto a otro. Cuantos más puntos, más oscura la zona.',
+            'mouse' => 'Pasa el cursor para levantar los puntos', 'touch' => 'Pasa el dedo para levantar los puntos',
+        ],
+        [
+            'id' => 'linea-fina', 'name' => 'Línea fina', 'effect' => 'engrave', 'work' => 'golondrinas',
+            'text' => 'Trazos de una sola aguja, finos y limpios. La forma sale de la línea, sin rellenos.',
+            'mouse' => 'Pasa el cursor sobre las líneas', 'touch' => 'Pasa el dedo sobre las líneas',
+        ],
+        [
+            'id' => 'ornamental', 'name' => 'Ornamental', 'effect' => 'ink-bloom', 'work' => 'serpiente',
+            'text' => 'Escamas, hojas y volutas que siguen la forma del cuerpo y lo recorren.',
+            'mouse' => 'Pasa el cursor para apartar la tinta', 'touch' => 'Pasa el dedo para apartar la tinta',
+        ],
+    ],
+
 ];

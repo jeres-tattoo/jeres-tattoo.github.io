@@ -7,6 +7,8 @@
 // reloj de pared la animación terminaría sin que nadie la viera. Se reproduce también con "Reducir movimiento":
 // es una entrada única y corta, y es la identidad de la web.
 
+import { loaded, boxBlur, clamp, smooth, easeInOut } from './image.js';
+
 // Recorte de la foto donde está la figura (fracciones del ancho y alto de la imagen).
 const CROP = { x: 0.16, y: 0.17, w: 0.62, h: 0.72 };
 const SAMPLE_W = 240;
@@ -26,6 +28,7 @@ export function initInkField(canvas) {
     let stars = [];
     let pointer = { x: -1e4, y: -1e4 };
     let repel = 120;
+    let figure = { left: 0, top: 0, right: 0, bottom: 0 }; // caja del arcángel en el lienzo
     let elapsed = 0; // segundos de animación realmente pintados
     let last = 0;
     let frame = 0;
@@ -122,6 +125,8 @@ export function initInkField(canvas) {
         repel = Math.max(100, sw * scale * 0.21);
         const left = cx - (sw * scale) / 2;
         const top = cy - (sh * scale) / 2;
+        // Un poco hacia dentro: los bordes del recorte se apagan en elipse y ahí casi no hay puntos.
+        figure = { left: left + sw * scale * 0.08, top: top + sh * scale * 0.05, right: left + sw * scale * 0.92, bottom: top + sh * scale * 0.95 };
         // Hasta que arranca la reunión, los puntos salen repartidos por todo el hero a su tamaño final.
         const fresh = !elapsed;
 
@@ -216,41 +221,16 @@ export function initInkField(canvas) {
     addEventListener('touchstart', follow, { passive: true });
     addEventListener('touchmove', follow, { passive: true });
     addEventListener('touchend', away, { passive: true });
+
+    // En móvil, el dedo que empieza sobre el arcángel mueve los puntos, no la página. Fuera de su caja
+    // (el nombre, el texto, el cielo de alrededor) el scroll sigue como siempre.
+    let holding = false;
+    canvas.addEventListener('touchstart', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.touches[0].clientX - rect.left;
+        const y = e.touches[0].clientY - rect.top;
+        holding = e.touches.length === 1 && x > figure.left && x < figure.right && y > figure.top && y < figure.bottom;
+    }, { passive: true });
+    canvas.addEventListener('touchmove', (e) => { if (holding && e.cancelable) e.preventDefault(); }, { passive: false });
     addEventListener('touchcancel', away, { passive: true });
 }
-
-// decode() decodifica fuera del hilo principal; si el navegador la rechaza, basta con que cargue.
-function loaded(image) {
-    const onload = () => new Promise((resolve, reject) => {
-        if (image.complete && image.naturalWidth) return resolve();
-        image.addEventListener('load', resolve, { once: true });
-        image.addEventListener('error', reject, { once: true });
-    });
-    return image.decode ? image.decode().catch(onload) : onload();
-}
-
-function boxBlur(src, w, h, r) {
-    const tmp = new Float32Array(src.length);
-    const out = new Float32Array(src.length);
-    for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-            let sum = 0;
-            let n = 0;
-            for (let k = Math.max(0, x - r); k <= Math.min(w - 1, x + r); k++) { sum += src[y * w + k]; n++; }
-            tmp[y * w + x] = sum / n;
-        }
-    }
-    for (let x = 0; x < w; x++) {
-        for (let y = 0; y < h; y++) {
-            let sum = 0;
-            let n = 0;
-            for (let k = Math.max(0, y - r); k <= Math.min(h - 1, y + r); k++) { sum += tmp[k * w + x]; n++; }
-            out[y * w + x] = sum / n;
-        }
-    }
-    return out;
-}
-
-const clamp = (v) => Math.min(1, Math.max(0, v));
-const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
-const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);

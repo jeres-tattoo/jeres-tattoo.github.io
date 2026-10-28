@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Content\Techniques;
 use App\Content\Works;
 use Illuminate\View\View;
 
@@ -14,6 +15,7 @@ class PageController extends Controller
         return view('pages.home', [
             'jere' => config('jere'),
             'works' => $works,
+            'techniques' => Techniques::all($works),
             'viewer' => Works::forViewer($works),
         ]);
     }

@@ -9,6 +9,7 @@
 <header class="top">
     <nav class="top__nav" aria-label="Secciones">
         <a href="#obra">Obra</a>
+        <a href="#tecnicas">Técnicas</a>
         <a href="#jere">Sobre Jere</a>
         <a href="#cita">Pedir cita</a>
     </nav>
@@ -51,6 +52,31 @@
                 </li>
             @endforeach
         </ul>
+    </section>
+
+    {{-- Cada técnica dibujada en vivo a partir de una de sus piezas (resources/js/lib/techniques/). --}}
+    <section id="tecnicas" class="tecnicas" aria-labelledby="tecnicas-title">
+        <div class="tecnicas__head">
+            <h2 id="tecnicas-title" class="title">Técnicas</h2>
+            <p>Las cuatro maneras de trabajar de Jere, dibujadas en vivo con sus propias piezas.</p>
+        </div>
+
+        <div class="tecnicas__row">
+            @foreach ($techniques as $technique)
+                <article class="tecnica" aria-labelledby="tecnica-{{ $technique['id'] }}">
+                    <canvas class="tecnica__canvas" data-technique="{{ $technique['effect'] }}" data-src="{{ $technique['img'] }}" aria-hidden="true"></canvas>
+                    <div class="tecnica__copy">
+                        <h3 id="tecnica-{{ $technique['id'] }}" class="tecnica__name">{{ $technique['name'] }}</h3>
+                        <p>{{ $technique['text'] }}</p>
+                        <p class="tecnica__hint" aria-hidden="true">
+                            <span class="hint-mouse">{{ $technique['mouse'] }}</span>
+                            <span class="hint-touch">{{ $technique['touch'] }}</span>
+                        </p>
+                        <button class="link tecnica__piece" type="button" data-piece="{{ $technique['piece'] }}" aria-haspopup="dialog">Ver la pieza: {{ $technique['title'] }}</button>
+                    </div>
+                </article>
+            @endforeach
+        </div>
     </section>
 
     <section id="jere" class="jere" aria-labelledby="jere-title">
