@@ -1,0 +1,76 @@
+/* Piezas que comparten todas las páginas: títulos, botones, enlaces, cabecera y pie. */
+
+.title {
+    margin: 0;
+    font: 400 clamp(2.75rem, 7vw, 5.5rem)/.95 var(--display);
+    letter-spacing: -.01em;
+}
+
+.button {
+    display: inline-block;
+    padding: .875rem 1.5rem;
+    border: 1px solid var(--hueso);
+    border-radius: 999px;
+    background: var(--hueso);
+    color: var(--vacio);
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color .25s, color .25s, border-color .25s;
+}
+.button:hover {
+    background: var(--halo);
+    border-color: var(--halo);
+}
+
+.link {
+    color: var(--hueso);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--hueso) 40%, transparent);
+    text-underline-offset: .3em;
+    transition: text-decoration-color .2s;
+}
+.link:hover { text-decoration-color: var(--halo); }
+
+/* ---------- Cabecera ---------- */
+
+.top {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem var(--gutter);
+    font-size: .9375rem;
+    background: linear-gradient(var(--vacio), transparent);
+}
+.top a {
+    text-decoration: none;
+    color: var(--niebla);
+    transition: color .2s;
+}
+.top a:hover { color: var(--hueso); }
+.top__nav { display: flex; gap: clamp(1rem, 3vw, 2.25rem); }
+/* Con cinco secciones, en móvil la cabecera se aprieta y suelta el enlace a Instagram. */
+@media (max-width: 520px) {
+    .top__ig { display: none; }
+    .top__nav { gap: .75rem; font-size: .875rem; }
+}
+
+/* ---------- Pie ---------- */
+
+.foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: .5rem 2rem;
+    padding: 2rem var(--gutter) 2.5rem;
+    border-top: 1px solid color-mix(in srgb, var(--hueso) 10%, transparent);
+    color: var(--niebla);
+    font-size: .9375rem;
+}
+.foot p { margin: 0; }
+.foot a { color: var(--niebla); text-underline-offset: .3em; }
+.foot a:hover { color: var(--hueso); }
+

@@ -6,15 +6,7 @@
 @section('content')
 <a class="skip" href="#obra">Saltar a la obra</a>
 
-<header class="top">
-    <nav class="top__nav" aria-label="Secciones">
-        <a href="#obra">Obra</a>
-        <a href="#tecnicas">Técnicas</a>
-        <a href="#jere">Sobre Jere</a>
-        <a href="#cita">Pedir cita</a>
-    </nav>
-    <a class="top__ig" href="https://www.instagram.com/{{ $jere['instagram'] }}/" rel="noopener">{{ '@'.$jere['instagram'] }}</a>
-</header>
+@include('partials.top')
 
 <main>
     {{-- Hero: el arcángel redibujado como un campo de puntos (resources/js/lib/ink-field.js). --}}
@@ -110,18 +102,15 @@
             <li>Escríbele por Instagram con tu idea, la zona del cuerpo y un tamaño aproximado.</li>
             <li>Jere te responde con presupuesto y las fechas libres en Madrid o en Múnich.</li>
         </ol>
-        <p class="cita__aside">También tiene diseños ya dibujados y listos para tatuar. Los publica en sus historias destacadas.</p>
+        <p class="cita__aside">También tiene diseños ya dibujados y listos para tatuar. Están todos en la biblioteca.</p>
         <div class="cita__actions">
             <a class="button" href="{{ $jere['dm'] }}" rel="noopener">Escribir a Jere por Instagram</a>
-            <a class="link" href="{{ $jere['available'] }}" rel="noopener">Ver diseños disponibles</a>
+            <a class="link" href="{{ route('library') }}">Ver diseños disponibles</a>
         </div>
     </section>
 </main>
 
-<footer class="foot">
-    <p>{{ $jere['name'] }}, tatuador. Madrid y Múnich.</p>
-    <a href="https://www.instagram.com/{{ $jere['instagram'] }}/" rel="noopener">{{ '@'.$jere['instagram'] }}</a>
-</footer>
+@include('partials.foot')
 
 <dialog class="lightbox" aria-labelledby="lightbox-title" tabindex="-1">
     <figure class="lightbox__figure">

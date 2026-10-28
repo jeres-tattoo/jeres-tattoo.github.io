@@ -8,6 +8,8 @@ export default defineConfig({
             input: [
                 'resources/css/pages/home.css',
                 'resources/js/pages/home.js',
+                'resources/css/pages/library.css',
+                'resources/js/pages/library.js',
             ],
             refresh: true,
         }),

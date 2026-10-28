@@ -31,13 +31,17 @@ class ExportSite extends Command
         // Aunque npm run dev esté encendido, la exportación usa siempre los assets compilados.
         Vite::useHotFile(storage_path('framework/export.hot'));
 
-        $response = $kernel->handle(Request::create('/'));
-        if ($response->getStatusCode() !== 200) {
-            $this->error("La portada respondió {$response->getStatusCode()}.");
+        // Cada página en su carpeta con un index.html, que es lo que Pages sirve para /biblioteca/.
+        foreach (['/' => 'index.html', '/biblioteca' => 'biblioteca/index.html'] as $path => $file) {
+            $response = $kernel->handle(Request::create($path));
+            if ($response->getStatusCode() !== 200) {
+                $this->error("{$path} respondió {$response->getStatusCode()}.");
 
-            return self::FAILURE;
+                return self::FAILURE;
+            }
+            File::ensureDirectoryExists(dirname("{$out}/{$file}"));
+            File::put("{$out}/{$file}", $response->getContent());
         }
-        File::put("{$out}/index.html", $response->getContent());
 
         foreach (['build', 'img'] as $dir) {
             File::copyDirectory(public_path($dir), "{$out}/{$dir}");
