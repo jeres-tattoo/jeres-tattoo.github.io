@@ -8,5 +8,5 @@
         <a href="{{ $home }}#jere">Sobre Jere</a>
         <a href="{{ $home }}#cita">Pedir cita</a>
     </nav>
-    <a class="top__ig" href="https://www.instagram.com/{{ $jere['instagram'] }}/" rel="noopener">{{ '@'.$jere['instagram'] }}</a>
+    <a class="top__ig" href="https://www.instagram.com/{{ $jere['instagram'] }}/" rel="noopener noreferrer">{{ '@'.$jere['instagram'] }}</a>
 </header>

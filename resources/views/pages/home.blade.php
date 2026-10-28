@@ -89,7 +89,7 @@
                 @foreach ($jere['studios'] as $studio)
                     <div>
                         <dt>{{ $studio['city'] }}</dt>
-                        <dd>{{ $studio['role'] }} en <a href="https://www.instagram.com/{{ $studio['instagram'] }}/" rel="noopener">{{ $studio['name'] }}</a></dd>
+                        <dd>{{ $studio['role'] }} en <a href="https://www.instagram.com/{{ $studio['instagram'] }}/" rel="noopener noreferrer">{{ $studio['name'] }}</a></dd>
                     </div>
                 @endforeach
             </dl>
@@ -104,7 +104,7 @@
         </ol>
         <p class="cita__aside">También tiene diseños ya dibujados y listos para tatuar. Están todos en la biblioteca.</p>
         <div class="cita__actions">
-            <a class="button" href="{{ $jere['dm'] }}" rel="noopener">Escribir a Jere por Instagram</a>
+            @include('partials.dm-link', ['class' => 'button', 'label' => 'Escribir a Jere por Instagram', 'message' => \App\Content\Dm::message('cita')])
             <a class="link" href="{{ route('library') }}">Ver diseños disponibles</a>
         </div>
     </section>
@@ -118,7 +118,7 @@
         <figcaption>
             <span id="lightbox-title" class="lightbox__title"></span>
             <span class="lightbox__meta"></span>
-            <a class="link lightbox__post" href="" rel="noopener">Ver en Instagram</a>
+            <a class="link lightbox__post" href="" target="_blank" rel="noopener noreferrer">Ver en Instagram</a>
         </figcaption>
     </figure>
     <div class="lightbox__controls">

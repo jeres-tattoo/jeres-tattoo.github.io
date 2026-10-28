@@ -6,6 +6,8 @@ import { initRelight } from '../lib/techniques/relight.js';
 import { initStipple } from '../lib/techniques/stipple.js';
 import { initEngrave } from '../lib/techniques/engrave.js';
 import { initInkBloom } from '../lib/techniques/ink-bloom.js';
+import { initDm } from '../lib/dm.js';
+import { initGuard } from '../lib/guard.js';
 
 const techniques = { relight: initRelight, stipple: initStipple, engrave: initEngrave, 'ink-bloom': initInkBloom };
 
@@ -18,3 +20,6 @@ initLightbox(
     JSON.parse(document.getElementById('works-data').textContent),
     [...document.querySelectorAll('[data-piece]')],
 );
+
+initDm();
+initGuard();

@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 
 // Exporta la web a HTML estático en dist/ para GitHub Pages. Necesita los assets ya compilados
@@ -30,6 +31,10 @@ class ExportSite extends Command
 
         // Aunque npm run dev esté encendido, la exportación usa siempre los assets compilados.
         Vite::useHotFile(storage_path('framework/export.hot'));
+        // Los enlaces entre páginas (route()) salen con el dominio de APP_URL y no con el de la petición
+        // simulada, que sería http://localhost.
+        URL::forceRootUrl(config('app.url'));
+        URL::forceScheme(parse_url(config('app.url'), PHP_URL_SCHEME) ?: 'https');
 
         // Cada página en su carpeta con un index.html, que es lo que Pages sirve para /biblioteca/.
         foreach (['/' => 'index.html', '/biblioteca' => 'biblioteca/index.html'] as $path => $file) {
@@ -39,8 +44,14 @@ class ExportSite extends Command
 
                 return self::FAILURE;
             }
+            $html = $response->getContent();
+            if (! in_array(parse_url(config('app.url'), PHP_URL_HOST), ['localhost', '127.0.0.1'], true) && preg_match('~//(localhost|127\.0\.0\.1)[:/"]~', $html)) {
+                $this->error("{$path} lleva enlaces a localhost.");
+
+                return self::FAILURE;
+            }
             File::ensureDirectoryExists(dirname("{$out}/{$file}"));
-            File::put("{$out}/{$file}", $response->getContent());
+            File::put("{$out}/{$file}", $html);
         }
 
         foreach (['build', 'img'] as $dir) {

@@ -3,6 +3,11 @@
 @section('title', 'Biblioteca de diseños disponibles, Jere Soriano')
 @section('description', 'Diseños de Jere Soriano ya dibujados y listos para tatuar, en un libro que se hojea página a página.')
 
+@push('head')
+{{-- Que los buscadores no saquen los diseños disponibles en sus resultados de imágenes. --}}
+<meta name="robots" content="noimageindex">
+@endpush
+
 @section('content')
 <a class="skip" href="#libro">Saltar al libro</a>
 
@@ -73,7 +78,7 @@
                     <div class="leaf" data-leaf>
                         <article class="page page--sheet">
                             <figure class="sheet__figure">
-                                <img data-src="{{ $design['img'] }}" alt="{{ $design['title'] ?? 'Diseño disponible nº '.($i + 1) }}" decoding="async">
+                                <img data-src="{{ $design['img'] }}" alt="{{ $design['title'] ?? 'Diseño disponible nº '.($i + 1) }}" decoding="async" draggable="false">
                             </figure>
                             <div class="sheet__caption">
                                 <p class="page__number">Nº {{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</p>

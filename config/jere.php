@@ -7,6 +7,13 @@ return [
     'instagram' => 'jeres.tattoo',
     'dm' => 'https://ig.me/m/jeres.tattoo',
 
+    // Mensajes que llevan escritos los enlaces al chat de Instagram (App\Content\Dm).
+    'messages' => [
+        'cita' => '¡Hola Jere! Me gustaría pedirte cita para un tatuaje. Mi idea es: ',
+        'design' => '¡Hola Jere! Me ha gustado el diseño nº :n de tu biblioteca (:text) y me gustaría tatuármelo. ¿Sigue disponible?',
+        'custom' => '¡Hola Jere! He visto tu biblioteca y me gustaría un diseño a medida. Mi idea es: ',
+    ],
+
     'studios' => [
         ['city' => 'Madrid', 'name' => 'Holdfast', 'instagram' => 'holdfast_es', 'role' => 'Residente'],
         ['city' => 'Múnich', 'name' => 'Tattoo Noir', 'instagram' => 'tattoo_noir_munich', 'role' => 'Invitado'],

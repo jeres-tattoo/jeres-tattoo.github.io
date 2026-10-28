@@ -5,4 +5,4 @@
 @if ($design['text'])
     <p class="page__text">{{ $design['text'] }}</p>
 @endif
-<a class="page__cta" href="{{ $jere['dm'] }}" rel="noopener">Pedir este diseño</a>
+@include('partials.dm-link', ['class' => 'page__cta', 'label' => 'Pedir este diseño', 'message' => \App\Content\Dm::message('design', ['n' => $i + 1, 'text' => \Illuminate\Support\Str::limit(rtrim($design['title'] ?? $design['text'] ?? '', '.'), 60)])])

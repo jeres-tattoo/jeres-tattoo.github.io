@@ -74,3 +74,30 @@
 .foot a { color: var(--niebla); text-underline-offset: .3em; }
 .foot a:hover { color: var(--hueso); }
 
+
+/* Aviso de «mensaje copiado» al pulsar un enlace al chat de Instagram (lib/dm.js). */
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem;
+    z-index: 2000;
+    max-width: calc(100vw - 2rem);
+    margin: 0;
+    padding: .75rem 1.125rem;
+    background: var(--hueso);
+    color: var(--vacio);
+    font: 500 .9375rem/1.4 var(--text);
+    border-radius: 2px;
+    transform: translate(-50%, 1rem);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s, transform .3s var(--ease-out);
+}
+.toast.is-shown { opacity: 1; transform: translate(-50%, 0); }
+
+/* Los dibujos no se arrastran ni se seleccionan, y en iPhone la pulsación larga no ofrece guardarlos. */
+img, canvas {
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+}
